@@ -1,0 +1,38 @@
+
+name: Build TinyWorld APK
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'TinyWorld.zip'
+      - '.github/workflows/main.yml'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract project
+        run: unzip -q TinyWorld.zip
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.4'
+
+      - name: Build APK
+        run: |
+          cd TinyWorld
+          sh get-libs.sh
+          gradle assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TinyWorld-APK
+          path: TinyWorld/app/build/outputs/apk/debug/app-debug.apk
